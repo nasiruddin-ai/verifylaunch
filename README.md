@@ -15,21 +15,35 @@ A curated product launch and discovery platform for **bootstrapped B2B / prosume
 
 - **Framework:** Next.js 16 (App Router, TypeScript)
 - **Styling:** Tailwind CSS v4 (editorial archival-paper design tokens)
-- **Database:** Prisma v6 + SQLite locally (Postgres-ready schema)
+- **Database:** Prisma v6 + PostgreSQL (Neon, Supabase, Vercel Storage, or local Postgres)
 - **Auth:** HTTP-only signed `jose` JWT sessions (GitHub OAuth 2.0, Work-Email magic link, and `DEV_AUTH_MODE=true` 1-click persona switcher)
 - **Testing:** Vitest (`src/lib/__tests__/*`)
+
+## Deploying to Vercel
+
+1. In your Vercel project dashboard, open **Storage** and connect a PostgreSQL database (e.g., **Neon** or **Supabase**). This automatically injects `DATABASE_URL` (and/or `POSTGRES_PRISMA_URL` + `POSTGRES_URL_NON_POOLING`).
+2. Add the following **Environment Variables** in Vercel Project Settings:
+   - `AUTH_SECRET` — any random 32+ character string for signing session cookies.
+   - `APP_URL` — your production Vercel URL (e.g., `https://verifylaunch.vercel.app`).
+   - `DEV_AUTH_MODE` — set to `"true"` if you want the 1-click demo persona switcher enabled on your preview/demo deployment, or `"false"` for production.
+   - *(Optional)* `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET` for real GitHub OAuth identity verification.
+3. Deploy (or **Redeploy** after adding env vars). `vercel.json` runs `npm run vercel-build`, which automatically:
+   - generates the Prisma Client for PostgreSQL,
+   - pushes the schema (`prisma db push --skip-generate`),
+   - seeds initial demo cohorts & personas **only once** if the database is empty, and
+   - builds the Next.js application.
 
 ## Local Quickstart
 
 ```bash
-# 1. Copy environment variables
+# 1. Copy environment variables and set DATABASE_URL to your PostgreSQL instance
 cp .env.example .env.local
 cp .env.example .env
 
-# 2. Install dependencies
+# 2. Install dependencies (runs prisma generate via postinstall)
 npm install
 
-# 3. Push SQLite schema and seed realistic demo data
+# 3. Push PostgreSQL schema and seed realistic demo data
 npm run db:push
 npm run db:seed
 
@@ -50,9 +64,10 @@ Use the top `DEV AUTH` switcher bar (or `/auth`) to jump between seeded roles wi
 ### Scripts
 
 - `npm run dev` — Start local Next.js dev server
-- `npm run build` — Production build + TypeScript check
+- `npm run build` — Generate Prisma client + Next.js production build
+- `npm run vercel-build` — Vercel build command (generate client, push Postgres schema, seed once if empty, build)
 - `npm run lint` — Run ESLint
 - `npm test` — Run Vitest unit test suite
-- `npm run db:push` — Generate Prisma client & sync SQLite schema
+- `npm run db:push` — Generate Prisma client & sync PostgreSQL schema
 - `npm run db:seed` — Reset & seed demo cohorts, users, products, and teardowns
 - `npm run db:reset` — Force-reset database and re-seed
