@@ -16,7 +16,7 @@ A curated product launch and discovery platform for **bootstrapped B2B / prosume
 - **Framework:** Next.js 16 (App Router, TypeScript)
 - **Styling:** Tailwind CSS v4 (editorial archival-paper design tokens)
 - **Database:** Prisma v6 + PostgreSQL (Neon, Supabase, Vercel Storage, or local Postgres)
-- **Auth:** HTTP-only signed `jose` JWT sessions (GitHub OAuth 2.0, Work-Email magic link, and `DEV_AUTH_MODE=true` 1-click persona switcher)
+- **Auth:** HTTP-only signed `jose` JWT sessions (built-in `scrypt` Email + Password sign-up/sign-in, plus optional GitHub OAuth 2.0, Resend Work-Email magic links, and `DEV_AUTH_MODE=true` 1-click persona switcher)
 - **Testing:** Vitest (`src/lib/__tests__/*`)
 
 ## Deploying to Vercel

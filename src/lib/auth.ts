@@ -47,6 +47,27 @@ export function hashToken(raw: string): string {
   return crypto.createHash("sha256").update(raw).digest("hex");
 }
 
+export function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const derived = crypto.scryptSync(password, salt, 64).toString("hex");
+  return `scrypt$${salt}$${derived}`;
+}
+
+export function verifyPassword(password: string, storedHash: string): boolean {
+  const parts = storedHash.split("$");
+  if (parts.length !== 3 || parts[0] !== "scrypt") return false;
+  const [, salt, expectedHex] = parts;
+  if (!salt || !expectedHex) return false;
+  try {
+    const derived = crypto.scryptSync(password, salt, 64);
+    const expected = Buffer.from(expectedHex, "hex");
+    if (derived.length !== expected.length) return false;
+    return crypto.timingSafeEqual(derived, expected);
+  } catch {
+    return false;
+  }
+}
+
 export async function signSessionToken(userId: string): Promise<string> {
   return new SignJWT({ sub: userId })
     .setProtectedHeader({ alg: "HS256" })

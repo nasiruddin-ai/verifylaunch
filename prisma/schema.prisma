@@ -10,6 +10,7 @@ datasource db {
 model User {
   id                   String   @id @default(cuid())
   email                String   @unique
+  passwordHash         String?
   name                 String
   handle               String   @unique
   role                 String   @default("BUYER") // BUYER | MAKER | EDITOR
