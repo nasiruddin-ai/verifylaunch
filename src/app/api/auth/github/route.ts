@@ -15,11 +15,15 @@ export async function GET(request: NextRequest) {
   store.set("vl_gh_state", state, {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 600,
   });
 
-  const appUrl = process.env.APP_URL || request.nextUrl.origin;
+  const appUrl = (process.env.APP_URL || request.nextUrl.origin).replace(
+    /\/+$/,
+    ""
+  );
   const redirectUri = `${appUrl}/api/auth/github/callback`;
   const params = new URLSearchParams({
     client_id: process.env.GITHUB_CLIENT_ID!,

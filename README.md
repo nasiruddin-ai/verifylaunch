@@ -25,8 +25,9 @@ A curated product launch and discovery platform for **bootstrapped B2B / prosume
 2. Add the following **Environment Variables** in Vercel Project Settings:
    - `AUTH_SECRET` — any random 32+ character string for signing session cookies.
    - `APP_URL` — your production Vercel URL (e.g., `https://verifylaunch.vercel.app`).
-   - `DEV_AUTH_MODE` — set to `"true"` if you want the 1-click demo persona switcher enabled on your preview/demo deployment, or `"false"` for production.
-   - *(Optional)* `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET` for real GitHub OAuth identity verification.
+   - `RESEND_API_KEY` *(for live email sign-in)* — API key from [Resend](https://resend.com); optionally set `EMAIL_FROM` (defaults to `VerifyLaunch <onboarding@resend.dev>`).
+   - `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET` *(for live GitHub OAuth)* — set the GitHub OAuth App callback URL to `<APP_URL>/api/auth/github/callback`.
+   - `DEV_AUTH_MODE` — set to `"true"` if you want instant sign-in links + the 1-click **Buyer / Maker / Editor** demo persona switcher without setting up Resend/GitHub yet (set `"false"` in production).
 3. Deploy (or **Redeploy** after adding env vars). `vercel.json` runs `npm run vercel-build`, which automatically:
    - generates the Prisma Client for PostgreSQL,
    - pushes the schema (`prisma db push --skip-generate`),

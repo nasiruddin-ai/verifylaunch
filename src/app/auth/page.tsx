@@ -4,6 +4,7 @@ import {
   isDevAuthEnabled,
   isGitHubOAuthConfigured,
 } from "@/lib/auth";
+import { isEmailDeliveryConfigured } from "@/lib/email";
 import { AuthClient } from "@/components/AuthClient";
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default async function AuthPage({
 
       <AuthClient
         devAuthEnabled={isDevAuthEnabled()}
+        emailDeliveryConfigured={isEmailDeliveryConfigured()}
         githubConfigured={isGitHubOAuthConfigured()}
         currentUser={
           user

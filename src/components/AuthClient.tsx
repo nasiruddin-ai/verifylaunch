@@ -13,6 +13,7 @@ import {
 
 interface AuthClientProps {
   devAuthEnabled: boolean;
+  emailDeliveryConfigured: boolean;
   githubConfigured: boolean;
   currentUser: {
     name: string;
@@ -25,6 +26,7 @@ interface AuthClientProps {
 
 export function AuthClient({
   devAuthEnabled,
+  emailDeliveryConfigured,
   githubConfigured,
   currentUser,
   errorCode,
@@ -39,6 +41,8 @@ export function AuthClient({
       ? `Authentication notice: ${errorCode.replace(/_/g, " ")}.`
       : null
   );
+
+  const canUseEmailAuth = emailDeliveryConfigured || devAuthEnabled;
 
   async function requestEmailLink(e: React.FormEvent) {
     e.preventDefault();
@@ -132,38 +136,63 @@ export function AuthClient({
             <strong>Verified Work Email</strong> badge on teardowns.
           </p>
 
-          <form onSubmit={requestEmailLink} className="mt-4 space-y-3">
-            <input
-              id="auth-email-input"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.io"
-              className="w-full rounded-md border border-border bg-canvas px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
-            />
-            <button
-              id="auth-email-submit"
-              type="submit"
-              disabled={sending}
-              className="w-full rounded-md border border-ink bg-ink px-4 py-2 text-xs font-medium text-canvas hover:opacity-90 disabled:opacity-60"
-            >
-              {sending ? "Generating Link..." : "Send Verification Link"}
-            </button>
-          </form>
-
-          {statusMessage && (
-            <div className="mt-3 rounded-md border border-verified-border bg-verified-bg p-3 text-xs text-ink">
-              <p>{statusMessage}</p>
-              {devVerifyUrl && (
-                <a
-                  id="dev-magic-link"
-                  href={devVerifyUrl}
-                  className="mt-2 inline-block font-mono font-semibold text-verified underline"
+          {canUseEmailAuth ? (
+            <>
+              <form onSubmit={requestEmailLink} className="mt-4 space-y-3">
+                <input
+                  id="auth-email-input"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.io"
+                  className="w-full rounded-md border border-border bg-canvas px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
+                />
+                <button
+                  id="auth-email-submit"
+                  type="submit"
+                  disabled={sending}
+                  className="w-full rounded-md border border-ink bg-ink px-4 py-2 text-xs font-medium text-canvas hover:opacity-90 disabled:opacity-60"
                 >
-                  Open local dev sign-in link →
-                </a>
+                  {sending
+                    ? emailDeliveryConfigured
+                      ? "Sending Sign-In Link..."
+                      : "Generating Link..."
+                    : emailDeliveryConfigured
+                      ? "Send Verification Link"
+                      : "Generate Instant Sign-In Link"}
+                </button>
+              </form>
+
+              {statusMessage && (
+                <div className="mt-3 rounded-md border border-verified-border bg-verified-bg p-3 text-xs text-ink">
+                  <p>{statusMessage}</p>
+                  {devVerifyUrl && (
+                    <a
+                      id="dev-magic-link"
+                      href={devVerifyUrl}
+                      className="mt-2.5 inline-flex w-full items-center justify-center rounded-md border border-verified bg-verified px-3 py-2 font-mono text-xs font-semibold text-canvas hover:opacity-90"
+                    >
+                      Continue &amp; Sign In →
+                    </a>
+                  )}
+                </div>
               )}
+            </>
+          ) : (
+            <div className="mt-4 space-y-2 rounded-md border border-border bg-surface-subtle p-3.5 text-xs text-ink-secondary">
+              <p>
+                <strong className="text-ink">Email delivery not configured:</strong>{" "}
+                add <code>RESEND_API_KEY</code> (and optional{" "}
+                <code>EMAIL_FROM</code>) in Vercel Environment Variables to send
+                real verification emails.
+              </p>
+              <p>
+                For testing/demos without an email provider, set{" "}
+                <code>DEV_AUTH_MODE=true</code> in Vercel Environment Variables
+                and redeploy to enable instant sign-in links and 1-click
+                personas.
+              </p>
             </div>
           )}
         </div>
@@ -190,12 +219,20 @@ export function AuthClient({
               <span>Continue with GitHub</span>
             </a>
           ) : (
-            <div className="mt-4 rounded-md border border-border bg-surface-subtle p-3.5 text-xs text-ink-secondary">
-              <strong className="text-ink">GitHub OAuth ready for keys:</strong>{" "}
-              set <code>GITHUB_CLIENT_ID</code> and{" "}
-              <code>GITHUB_CLIENT_SECRET</code> in <code>.env.local</code> to
-              enable live GitHub OAuth. Use Work Email or the local Dev Persona
-              toggle below in the meantime.
+            <div className="mt-4 space-y-2 rounded-md border border-border bg-surface-subtle p-3.5 text-xs text-ink-secondary">
+              <p>
+                <strong className="text-ink">GitHub OAuth ready for keys:</strong>{" "}
+                set <code>GITHUB_CLIENT_ID</code> and{" "}
+                <code>GITHUB_CLIENT_SECRET</code> in Vercel Environment
+                Variables (or <code>.env.local</code>) with callback URL{" "}
+                <code>/api/auth/github/callback</code>.
+              </p>
+              {devAuthEnabled && (
+                <p>
+                  You can also use the <strong>Demo Personas</strong> below in
+                  the meantime.
+                </p>
+              )}
             </div>
           )}
         </div>
