@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --canvas: #faf9f6;
+  --surface: #ffffff;
+  --surface-subtle: #f4f2ec;
+  --ink: #141518;
+  --ink-secondary: #57534e;
+  --ink-muted: #78716c;
+  --border: #e5e2da;
+  --border-strong: #d6d2c7;
+  --verified: #0f766e;
+  --verified-bg: #eefaf7;
+  --verified-border: #bfe5dc;
+  --caution: #b45309;
+  --caution-bg: #fef8eb;
+  --caution-border: #f3d59b;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-verified: var(--verified);
+  --color-verified-bg: var(--verified-bg);
+  --color-verified-border: var(--verified-border);
+  --color-caution: var(--caution);
+  --color-caution-bg: var(--caution-bg);
+  --color-caution-border: var(--caution-border);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-border: var(--danger-border);
+
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), Georgia, Cambria, serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+html,
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Editorial structural helpers */
+.editorial-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(20, 21, 24, 0.03);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.editorial-card-interactive:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 14px rgba(20, 21, 24, 0.05);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

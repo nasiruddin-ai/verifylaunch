@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  name                 String
+  handle               String   @unique
+  role                 String   @default("BUYER") // BUYER | MAKER | EDITOR
+  verifiedIdentityType String   @default("NONE") // NONE | GITHUB | WORK_EMAIL
+  githubUsername       String?
+  workDomain           String?
+  bio                  String?
+  createdAt            DateTime @default(now())
+
+  products      Product[]
+  teardowns     Teardown[]
+  bookmarks     Bookmark[]
+  visits        ProductVisit[]
+  reviewActions ReviewAction[]
+}
+
+model EmailAuthToken {
+  id         String    @id @default(cuid())
+  email      String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+}
+
+model Cohort {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  summary        String
+  startsAt       DateTime
+  endsAt         DateTime
+  randomizeUntil DateTime
+  maxSlots       Int      @default(8)
+  status         String   @default("UPCOMING") // UPCOMING | ACTIVE | ARCHIVED
+  createdAt      DateTime @default(now())
+
+  products      Product[]
+  reviewActions ReviewAction[]
+}
+
+model Product {
+  id                   String    @id @default(cuid())
+  slug                 String    @unique
+  makerId              String
+  cohortId             String?
+  name                 String
+  tagline              String
+  description          String
+  notForWhom           String
+  websiteUrl           String
+  tryNowUrl            String
+  pricingUrl           String
+  demoVideoUrl         String?
+  logoMark             String    @default("VL")
+  category             String // DEV_INFRA | SAAS_OPS | ANALYTICS | BILLING_FINOPS | SECURITY_AUTH | PRODUCTIVITY | GROWTH_CRM
+  pricingModel         String // FREE_TIER | FREEMIUM | PAID_ONLY | OPEN_SOURCE
+  startingPriceUsd     Int       @default(0)
+  noCreditCardTrial    Boolean   @default(true)
+  selfHostable         Boolean   @default(false)
+  dataExportable       Boolean   @default(true)
+  fundingStage         String    @default("BOOTSTRAPPED") // BOOTSTRAPPED | INDIE_PROFITABLE | SEED_VC | SERIES_A_PLUS
+  status               String    @default("SUBMITTED") // SUBMITTED | CHANGES_REQUESTED | APPROVED | LIVE | REJECTED
+  preflightPassed      Boolean   @default(false)
+  preflightReportJson  String?
+  githubRepoUrl        String?
+  githubLastCommitAt   DateTime?
+  domainVerified       Boolean   @default(false)
+  revenueBand          String    @default("UNVERIFIED") // UNVERIFIED | EARLY_PAYING | MRR_1K_10K | MRR_10K_PLUS
+  lastVerifiedActiveAt DateTime?
+  editorNotes          String?
+  launchedAt           DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  maker         User           @relation(fields: [makerId], references: [id], onDelete: Cascade)
+  cohort        Cohort?        @relation(fields: [cohortId], references: [id], onDelete: SetNull)
+  teardowns     Teardown[]
+  bookmarks     Bookmark[]
+  visits        ProductVisit[]
+  reviewActions ReviewAction[]
+
+  @@index([status, cohortId])
+  @@index([category, status])
+  @@index([makerId])
+}
+
+model ProductVisit {
+  id            String   @id @default(cuid())
+  productId     String
+  userId        String?
+  sessionHash   String
+  clickedTryNow Boolean  @default(true)
+  referrer      String?
+  createdAt     DateTime @default(now())
+
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  teardowns Teardown[]
+
+  @@index([productId, userId, clickedTryNow])
+  @@index([productId, createdAt])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+}
+
+model Teardown {
+  id                    String   @id @default(cuid())
+  productId             String
+  authorId              String
+  visitId               String?
+  useCaseTested         String
+  strongestFeature      String
+  missingOrFriction     String
+  wouldRecommend        String // YES | WITH_CAVEATS | NOT_YET
+  timeSpentMinutes      Int      @default(15)
+  identityBadgeSnapshot String // GITHUB | WORK_EMAIL | MEMBER
+  qualityWeight         Float    @default(1.0)
+  status                String   @default("PUBLISHED") // PUBLISHED | FLAGGED | HIDDEN
+  createdAt             DateTime @default(now())
+
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  author  User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  visit   ProductVisit? @relation(fields: [visitId], references: [id], onDelete: SetNull)
+
+  @@unique([productId, authorId])
+  @@index([productId, status])
+  @@index([authorId, status])
+}
+
+model ReviewAction {
+  id        String   @id @default(cuid())
+  productId String
+  editorId  String
+  cohortId  String?
+  decision  String // APPROVED | CHANGES_REQUESTED | REJECTED
+  feedback  String
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  editor  User    @relation(fields: [editorId], references: [id], onDelete: Cascade)
+  cohort  Cohort? @relation(fields: [cohortId], references: [id], onDelete: SetNull)
+
+  @@index([productId, createdAt])
+}
